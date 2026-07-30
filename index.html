@@ -262,7 +262,7 @@ function renderTeam(c){
     '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header">达成率</th>'+
     '<th class="num-header">1月</th><th class="num-header">2月</th><th class="num-header">3月</th>'+
     '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
-    '<th class="num-header">ITO预估</th><th class="num-header">延迟</th><th class="num-header">丢标</th></tr></thead><tbody>';
+    '<th class="num-header">ITO预估</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
 
   teams.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
     h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
