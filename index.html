@@ -288,7 +288,8 @@ function renderTeam(c){
     h+='<td class="num" style="color:'+(t.july_loss>0?'#e74c3c':'#2a3a50')+'">'+(t.july_loss>0?fmtW(t.july_loss):'-')+'</td>';
     h+='</tr>';
   });
-  h+='</tbody></table></div></div>';
+  h+='</tbody></table></div>'+
+    '<div style="margin-top:8px;padding:6px 10px;font-size:11px;color:#5a7fa5;background:rgba(120,160,210,0.08);border-radius:6px;border-left:2px solid #4a90d9">注：上述金额为商务 KPI 金额（扣除相关费用，非实际合同中标金额）</div></div>';
 
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>月度达成趋势</div><canvas id="chartTrend" style="max-height:320px"></canvas></div>';
 
@@ -300,8 +301,6 @@ function renderTeam(c){
   h+='<div class="chart-row col3">';
   pieTeams.forEach(function(tn){h+='<div class="chart-box"><div class="section-title">'+tn+' · 业绩占比（按一号位归类 / ITO）</div><canvas id="pie-'+tn+'" style="max-height:220px"></canvas><div class="pie-legend" id="leg-'+tn+'"></div></div>';});
   h+='</div>';
-
-  h+='<div class="note-bar">注：上述销售团队业绩占比的数据取【项目类中标明细】的 O 列商务中标金额（销售 KPI 计入）对应的 M 列一号位业绩归类，并计入【ITO结算明细】H 列签约额（销售 KPI）的 ITO 统计；上述金额为商务 KPI 金额（扣除相关费用，非实际合同中标金额）。</div>';
 
   c.innerHTML=h;
 
@@ -380,14 +379,13 @@ function renderProductLine(c){
       '<td class="num">'+progBar(p.rate_1_7||0,p.rate_1_7||0,{max:1})+'</td></tr>';
   });
   h+='</tbody></table></div>'+
-    '<div style="margin-top:8px;padding:6px 10px;font-size:11px;color:#5a7fa5;background:rgba(120,160,210,0.08);border-radius:6px;border-left:2px solid #4a90d9">注：保险代运营仅包含代运营陪跑；上述金额为实际合同中标金额</div></div>';
+    '<div style="margin-top:8px;padding:6px 10px;font-size:11px;color:#5a7fa5;background:rgba(120,160,210,0.08);border-radius:6px;border-left:2px solid #4a90d9">注：上述金额为实际合同中标金额</div></div>';
 
   // 月度中标曲线 (堆叠 or 多线)
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>各产品线月度中标金额曲线（1-7月）</div><canvas id="chartPlMonthly" style="max-height:320px"></canvas></div>';
 
   // 产品线团队贡献
   h+='<div class="section-title" style="margin:18px 0 10px">产品线 · 销售团队业绩贡献（按一号位归类 / ITO）</div><div id="plTeamCharts" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>';
-  h+='<div class="note-bar">注：产品线销售团队业绩贡献中，金额取【项目类中标明细】O 列商务中标金额对应的各团队业绩，并计入【ITO结算明细】H 列签约额；上述金额为实际合同中标金额；各团队标注含金额及占该产品线的比例。</div>';
 
   c.innerHTML=h;
   setTimeout(function(){
@@ -406,12 +404,14 @@ function renderProductLine(c){
       D.pl_order.forEach(function(plName){
         var contrib=D.pl_team_contrib[plName];
         if(!contrib||!contrib.length)return;
+        var total=contrib.reduce(function(s,x){return s+x.amount;},0);
+        var cols=contrib.map(function(x,i){return C[i%C.length];});
         var box=document.createElement('div');
         box.className='chart-box';
-        box.innerHTML='<div class="section-title" style="font-size:12px"><span class="dot"></span>'+plName+'</div><canvas></canvas>';
+        box.innerHTML='<div class="section-title" style="font-size:12px"><span class="dot"></span>'+plName+'</div><canvas></canvas><div class="pie-legend" style="margin-top:6px"></div>';
         tc.appendChild(box);
-        var total=contrib.reduce(function(s,x){return s+x.amount;},0);
-        safeChart(box.querySelector('canvas'),{type:'doughnut',data:{labels:contrib.map(function(x){return x.team;}),datasets:[{data:contrib.map(function(x){return x.amount;}),backgroundColor:contrib.map(function(x,i){return C[i%C.length];}),borderColor:'rgba(8,12,24,1)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'right',labels:{color:'#7a90b0',padding:8,font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:function(c){return c.label+': '+fmtW(c.raw)+' ('+(total>0?(c.raw/total*100).toFixed(1):0)+'%)';}}}}}});
+        safeChart(box.querySelector('canvas'),{type:'doughnut',data:{labels:contrib.map(function(x){return x.team;}),datasets:[{data:contrib.map(function(x){return x.amount;}),backgroundColor:cols,borderColor:'rgba(8,12,24,1)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+fmtW(c.raw)+' ('+(total>0?(c.raw/total*100).toFixed(1):0)+'%)';}}}}}});
+        box.querySelector('.pie-legend').innerHTML=contrib.map(function(x,i){return '<span class="pie-item"><span class="pie-dot" style="background:'+cols[i]+'"></span>'+x.team+': '+fmtW(x.amount)+' ('+(total>0?(x.amount/total*100).toFixed(1):0)+'%)</span>';}).join('');
       });
     }
   },100);
