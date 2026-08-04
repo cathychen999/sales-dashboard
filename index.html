@@ -248,7 +248,7 @@ function renderTeam(c){
     '<div class="kpi-card"><div class="kpi-label">YTD中标累计</div><div class="kpi-value">'+fmtW(D.summary.ytd_bid)+'</div><div class="kpi-sub">达成率 '+pctV(D.summary.ytd_bid_rate)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD签约累计</div><div class="kpi-value">'+fmtW(D.summary.ytd_sign)+'</div><div class="kpi-sub">达成率 '+pctV(D.summary.ytd_sign_rate)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">1-7月达成</div><div class="kpi-value">'+fmtW(D.summary.achieve_1_7)+'</div><div class="kpi-sub">vs '+fmtW(D.summary.target_1_7)+' | '+pctV(D.summary.rate_1_7)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">Q3预测总金额</div><div class="kpi-value">'+fmtW(q3Total)+'</div><div class="kpi-sub">7月实际+待计入+ITO+8/9预测</div></div></div>';
+    '<div class="kpi-card"><div class="kpi-label">Q3预测总金额</div><div class="kpi-value">'+fmtW(q3Total)+'</div><div class="kpi-sub">7月实际+ITO+8/9预测</div></div></div>';
 
   h+='<div class="kpi-row" style="grid-template-columns:repeat(3,1fr);margin-top:-8px">'+
     '<div class="kpi-card" style="border-left:2px solid #00b4d8"><div class="kpi-label">7月ITO实际</div><div class="kpi-value" style="font-size:20px">'+fmtW(julyItoTotal)+'</div><div class="kpi-sub">202607结算</div></div>'+
@@ -270,7 +270,7 @@ function renderTeam(c){
     '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header">达成率</th>'+
     '<th class="num-header">1月</th><th class="num-header">2月</th><th class="num-header">3月</th>'+
     '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
-    '<th class="num-header">ITO预估</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
+    '<th class="num-header">7月ITO实际</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
 
   teams.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
     h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
@@ -282,7 +282,7 @@ function renderTeam(c){
       '<td class="num hl">'+fmtW(t.achieve_1_7)+'</td>'+
       '<td class="num">'+progBar(t.rate_1_7||0,t.rate_1_7||0,{max:1})+'</td>';
     t.monthly.forEach(function(m){h+='<td class="num">'+(m>0?fmtW(m):'<span style="color:#2a3a50">-</span>')+'</td>';});
-    h+='<td class="num">'+(t.july_ito_estimate>0?fmtW(t.july_ito_estimate):'<span style="color:#2a3a50">-</span>')+'</td>';
+    h+='<td class="num">'+(t.july_ito_actual>0?fmtW(t.july_ito_actual):'<span style="color:#2a3a50">-</span>')+'</td>';
     h+='<td class="num" style="color:'+(t.july_delay>0?'#f39c12':'#2a3a50')+'">'+(t.july_delay>0?fmtW(t.july_delay):'-')+'</td>';
     h+='<td class="num" style="color:'+(t.july_loss>0?'#e74c3c':'#2a3a50')+'">'+(t.july_loss>0?fmtW(t.july_loss):'-')+'</td>';
     h+='</tr>';
