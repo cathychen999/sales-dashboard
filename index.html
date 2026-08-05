@@ -274,6 +274,7 @@ let teamCharts={};
 
 function renderTeam(c){
   var teams=D.teams;
+  var teamsView=teams.filter(function(t){return t.name!=='销售小组';}); // 隐藏销售小组占位行
   var q3Total=0;D.q3_team_predictions.forEach(function(p){q3Total+=p.q3_total_predict;});
   var julyDelayTotal=0,julyLossTotal=0,julyItoTotal=0;
   teams.forEach(function(t){julyDelayTotal+=t.july_delay||0;julyLossTotal+=t.july_loss||0;julyItoTotal+=t.july_ito_actual||0;});
@@ -290,9 +291,9 @@ function renderTeam(c){
     '<div class="kpi-card" style="border-left:2px solid #f39c12"><div class="kpi-label">7月必拿延迟</div><div class="kpi-value" style="font-size:20px">'+fmtW(julyDelayTotal)+'</div><div class="kpi-sub">'+D.delay_summary.delay_count+'条待计入</div></div>'+
     '<div class="kpi-card" style="border-left:2px solid #e74c3c"><div class="kpi-label">7月必拿丢标</div><div class="kpi-value" style="font-size:20px">'+fmtW(julyLossTotal)+'</div></div></div>';
 
-  var ttBid=teams.reduce(function(s,t){return s+t.ytd_bid;},0);
+  var ttBid=teamsView.reduce(function(s,t){return s+t.ytd_bid;},0);
   h+='<div class="summary-bar"><span>贡献度 (YTD中标)：</span>';
-  teams.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
+  teamsView.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
     h+='<span class="summary-item" style="color:#8899b8">'+t.name+' <strong>'+(t.ytd_bid/ttBid*100).toFixed(1)+'%</strong></span>';
   });
   h+='</div>';
@@ -307,12 +308,12 @@ function renderTeam(c){
     '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
     '<th class="num-header">7月ITO实际</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
 
-  teams.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
+  teamsView.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
     h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
       '<td style="font-weight:600">'+t.name+'</td><td><span class="tag tag-info">'+(t.type||'-')+'</span></td>'+
       '<td class="num">'+fmtW(t.year_target)+'</td>'+
       '<td class="num hl">'+fmtW(t.ytd_bid)+'</td>'+
-      '<td class="num">'+progBar(t.ytd_bid,t.ytd_bid_rate,{max:Math.max.apply(null,teams.map(function(x){return x.ytd_bid;}))})+'</td>'+
+      '<td class="num">'+progBar(t.ytd_bid,t.ytd_bid_rate,{max:Math.max.apply(null,teamsView.map(function(x){return x.ytd_bid;}))})+'</td>'+
       '<td class="num">'+fmtW(t.target_1_7)+'</td>'+
       '<td class="num hl">'+fmtW(t.achieve_1_7)+'</td>'+
       '<td class="num">'+progBar(t.rate_1_7||0,t.rate_1_7||0,{max:1})+'</td>';
