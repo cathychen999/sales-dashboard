@@ -754,8 +754,7 @@ function renderDelay(c){
   var h='<div class="kpi-row">'+
     '<div class="kpi-card" style="border-left:2px solid #f39c12"><div class="kpi-label">延迟商机</div><div class="kpi-value">'+fmtW(D.delay_summary.delay_total)+'</div><div class="kpi-sub">'+D.delay_summary.delay_count+'条 | 7月延迟，待计入</div></div>'+
     '<div class="kpi-card" style="border-left:2px solid #e74c3c"><div class="kpi-label">丢标商机</div><div class="kpi-value">'+fmtW(D.delay_summary.loss_total)+'</div><div class="kpi-sub">'+D.delay_summary.loss_count+'条</div></div>'+
-    '<div class="kpi-card" style="border-left:2px solid #e84393"><div class="kpi-label">停止商机</div><div class="kpi-value">'+fmtW(D.delay_summary.stop_total)+'</div><div class="kpi-sub">'+D.delay_summary.stop_count+'条</div></div>'+
-    '<div class="kpi-card" style="border-left:2px solid #1a5fd9"><div class="kpi-label">7月若含延迟</div><div class="kpi-value" style="font-size:20px">'+fmtW((D.summary.achieve_1_7||0)+D.delay_summary.delay_total)+'</div><div class="kpi-sub">实际 '+fmtW(D.summary.achieve_1_7)+' + 延迟 '+fmtW(D.delay_summary.delay_total)+'</div></div></div>';
+    '<div class="kpi-card" style="border-left:2px solid #e84393"><div class="kpi-label">停止商机</div><div class="kpi-value">'+fmtW(D.delay_summary.stop_total)+'</div><div class="kpi-sub">'+D.delay_summary.stop_count+'条</div></div></div>';
 
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>延迟商机 ('+(D.delay_summary.delay_count||0)+'条)</div><div class="scroll-x"><table class="data-table" id="delayTable"><thead><tr>'+
     '<th data-sort="dteam" data-type="str">团队</th><th data-sort="dbd" data-type="str">BD</th>'+
