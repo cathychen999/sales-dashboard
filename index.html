@@ -272,6 +272,40 @@ function closeModalBg(e){if(e.target===document.getElementById('modalOverlay'))c
 
 let teamCharts={};
 
+// === 团队多选筛选（通用：单选/多选），用于 销售团队总揽表、Q3团队明细、销售个人达成 ===
+var teamTabSel=[];   // 销售团队总揽 · 1-7月目标VS达成
+var q3TeamSel=[];    // Q3 团队预测明细
+var bdTeamSel=[];    // 销售个人达成
+function teamFilterBar(prefix, teams, sel){
+  var allActive = !sel || sel.length===0;
+  var html='<div class="filter-bar" data-prefix="'+prefix+'" style="margin-bottom:10px"><span class="filter-label">团队：</span>'+
+    '<button class="filter-btn '+(allActive?'active':'')+'" data-tn="" onclick="teamToggle(\''+prefix+'\',this)">全部</button>';
+  teams.forEach(function(t){
+    var on = !allActive && sel.indexOf(t)>=0;
+    html+='<button class="filter-btn '+(on?'active':'')+'" data-tn="'+t+'" onclick="teamToggle(\''+prefix+'\',this)">'+t+'</button>';
+  });
+  html+='</div>';
+  return html;
+}
+function teamToggle(prefix, btn){
+  var team = btn.getAttribute('data-tn');
+  var arr = prefix==='teamTab'?teamTabSel : prefix==='q3Team'?q3TeamSel : bdTeamSel;
+  if(team===''){ arr=[]; }
+  else{
+    var i=arr.indexOf(team);
+    if(i>=0) arr.splice(i,1); else arr.push(team);
+  }
+  if(prefix==='teamTab') teamTabSel=arr; else if(prefix==='q3Team') q3TeamSel=arr; else bdTeamSel=arr;
+  var bar=btn.parentNode;
+  bar.querySelectorAll('.filter-btn').forEach(function(b){
+    var tn=b.getAttribute('data-tn');
+    b.classList.toggle('active', tn==='' ? arr.length===0 : arr.indexOf(tn)>=0);
+  });
+  if(prefix==='teamTab') renderTeamTable();
+  else if(prefix==='q3Team') renderQ3TeamTable();
+  else bdTableRender();
+}
+
 function renderTeam(c){
   var teams=D.teams;
   var teamsView=teams.filter(function(t){return t.name!=='销售小组';}); // 隐藏销售小组占位行
@@ -298,33 +332,10 @@ function renderTeam(c){
   });
   h+='</div>';
 
-  h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>1-7月目标 VS 达成</div><div class="scroll-x"><table class="data-table" id="teamTable"><thead><tr>'+
-    '<th data-sort="name" data-type="str">团队</th><th data-sort="type" data-type="str">类别</th>'+
-    '<th class="num-header" data-sort="year_target" data-type="num">年度目标</th>'+
-    '<th class="num-header" data-sort="ytd_bid" data-type="num">YTD中标</th><th class="num-header">达成率</th>'+
-    '<th class="num-header" data-sort="target_1_7" data-type="num">1-7月目标</th>'+
-    '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header">达成率</th>'+
-    '<th class="num-header">1月</th><th class="num-header">2月</th><th class="num-header">3月</th>'+
-    '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
-    '<th class="num-header">7月ITO实际</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
-
-  teamsView.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(t){
-    h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
-      '<td style="font-weight:600">'+t.name+'</td><td><span class="tag tag-info">'+(t.type||'-')+'</span></td>'+
-      '<td class="num">'+fmtW(t.year_target)+'</td>'+
-      '<td class="num hl">'+fmtW(t.ytd_bid)+'</td>'+
-      '<td class="num">'+progBar(t.ytd_bid,t.ytd_bid_rate,{max:Math.max.apply(null,teamsView.map(function(x){return x.ytd_bid;}))})+'</td>'+
-      '<td class="num">'+fmtW(t.target_1_7)+'</td>'+
-      '<td class="num hl">'+fmtW(t.achieve_1_7)+'</td>'+
-      '<td class="num">'+progBar(t.rate_1_7||0,t.rate_1_7||0,{max:1})+'</td>';
-    t.monthly.forEach(function(m){h+='<td class="num">'+(m>0?fmtW(m):'<span style="color:#c2ccda">-</span>')+'</td>';});
-    h+='<td class="num">'+(t.july_ito_actual>0?fmtW(t.july_ito_actual):'<span style="color:#c2ccda">-</span>')+'</td>';
-    h+='<td class="num" style="color:'+(t.july_delay>0?'#f39c12':'#c2ccda')+'">'+(t.july_delay>0?fmtW(t.july_delay):'-')+'</td>';
-    h+='<td class="num" style="color:'+(t.july_loss>0?'#e74c3c':'#c2ccda')+'">'+(t.july_loss>0?fmtW(t.july_loss):'-')+'</td>';
-    h+='</tr>';
-  });
-  h+='</tbody></table></div>'+
-    '<div style="margin-top:8px;padding:6px 10px;font-size:11px;color:#6b7a90;background:rgba(120,160,210,0.08);border-radius:6px;border-left:2px solid #4a90d9">注：上述金额为商务 KPI 金额（扣除相关费用，非实际合同中标金额）</div></div>';
+  var teamNames=teamsView.map(function(t){return t.name;});
+  h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>1-7月目标 VS 达成</div>'+
+    teamFilterBar('teamTab', teamNames, teamTabSel)+
+    '<div id="teamTableWrap"></div></div>';
 
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>月度达成趋势</div><canvas id="chartTrend" style="max-height:320px"></canvas></div>';
 
@@ -338,6 +349,7 @@ function renderTeam(c){
   h+='</div>';
 
   c.innerHTML=h;
+  renderTeamTable();
 
   setTimeout(function(){
     var ctx=document.getElementById('chartTrend');
@@ -357,8 +369,44 @@ function renderTeam(c){
       safeChart(ottx,{type:'line',data:{labels:['1月','2月','3月','4月','5月','6月','7月'],datasets:ods},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#5a6b82',padding:12,usePointStyle:true}}},scales:{y:{grid:{color:'rgba(26,95,217,0.08)'},ticks:{color:'#6b7a90',stepSize:5}},x:{grid:{display:false},ticks:{color:'#6b7a90'}}}}});
     }
     pieTeams.forEach(function(tn){renderPie(tn,'pie-'+tn,'leg-'+tn);});
-    makeSortable('teamTable');
   },150);
+}
+
+function renderTeamTable(){
+  var wrap=document.getElementById('teamTableWrap');
+  if(!wrap) return;
+  var teamsView=D.teams.filter(function(t){return t.name!=='销售小组';});
+  var list = teamTabSel.length ? teamsView.filter(function(t){return teamTabSel.indexOf(t.name)>=0;}) : teamsView;
+  list=list.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;});
+  var ttBid=teamsView.reduce(function(s,t){return s+t.ytd_bid;},0);
+  var h='<div class="scroll-x"><table class="data-table" id="teamTable"><thead><tr>'+
+    '<th data-sort="name" data-type="str">团队</th><th data-sort="type" data-type="str">类别</th>'+
+    '<th class="num-header" data-sort="year_target" data-type="num">年度目标</th>'+
+    '<th class="num-header" data-sort="ytd_bid" data-type="num">YTD中标</th><th class="num-header">达成率</th>'+
+    '<th class="num-header" data-sort="target_1_7" data-type="num">1-7月目标</th>'+
+    '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header">达成率</th>'+
+    '<th class="num-header">1月</th><th class="num-header">2月</th><th class="num-header">3月</th>'+
+    '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
+    '<th class="num-header">7月ITO实际</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
+  list.forEach(function(t){
+    h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
+      '<td style="font-weight:600">'+t.name+'</td><td><span class="tag tag-info">'+(t.type||'-')+'</span></td>'+
+      '<td class="num">'+fmtW(t.year_target)+'</td>'+
+      '<td class="num hl">'+fmtW(t.ytd_bid)+'</td>'+
+      '<td class="num">'+progBar(t.ytd_bid,t.ytd_bid_rate,{max:Math.max.apply(null,teamsView.map(function(x){return x.ytd_bid;}))})+'</td>'+
+      '<td class="num">'+fmtW(t.target_1_7)+'</td>'+
+      '<td class="num hl">'+fmtW(t.achieve_1_7)+'</td>'+
+      '<td class="num">'+progBar(t.rate_1_7||0,t.rate_1_7||0,{max:1})+'</td>';
+    t.monthly.forEach(function(m){h+='<td class="num">'+(m>0?fmtW(m):'<span style="color:#c2ccda">-</span>')+'</td>';});
+    h+='<td class="num">'+(t.july_ito_actual>0?fmtW(t.july_ito_actual):'<span style="color:#c2ccda">-</span>')+'</td>';
+    h+='<td class="num" style="color:'+(t.july_delay>0?'#f39c12':'#c2ccda')+'">'+(t.july_delay>0?fmtW(t.july_delay):'-')+'</td>';
+    h+='<td class="num" style="color:'+(t.july_loss>0?'#e74c3c':'#c2ccda')+'">'+(t.july_loss>0?fmtW(t.july_loss):'-')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>'+
+    '<div style="margin-top:8px;padding:6px 10px;font-size:11px;color:#6b7a90;background:rgba(120,160,210,0.08);border-radius:6px;border-left:2px solid #4a90d9">注：上述金额为商务 KPI 金额（扣除相关费用，非实际合同中标金额）</div>';
+  wrap.innerHTML=h;
+  makeSortable('teamTable');
 }
 
 function renderPie(tn,cid,lid){
@@ -477,24 +525,19 @@ function showPlDetail(name){
 }
 
 function renderBd(c){
-  var teams=['全部'].concat(Array.from(new Set(D.bds.map(function(b){return b.team;}))));
-  var h='<div class="filter-bar"><span class="filter-label">团队：</span>'+
-    teams.map(function(t,i){return '<button class="filter-btn'+(i===0?' active':'')+'" data-ft="'+t+'" onclick="filterBd(\'team\',\''+t+'\')">'+t+'</button>';}).join('')+
-    '</div><div id="bdTableWrap"></div>';
+  var realTeams=Array.from(new Set(D.bds.map(function(b){return b.team;})));
+  var h=teamFilterBar('bd', realTeams, bdTeamSel)+'<div id="bdTableWrap"></div>';
   c.innerHTML=h;
-  filterBd('team','全部');
+  bdTableRender();
 }
 
-var bdTeamFilter='全部';
-var bdNameFilter='';
-function filterBd(type,val){
-  if(type==='team')bdTeamFilter=val;
-  if(type==='name')bdNameFilter=val;
-  document.querySelectorAll('.filter-btn[data-ft]').forEach(function(b){b.classList.toggle('active',b.dataset.ft===bdTeamFilter);});
+function bdTableRender(){
   var wrap=document.getElementById('bdTableWrap');
-  var bds=D.bds.filter(function(b){return bdTeamFilter==='全部'||b.team===bdTeamFilter;})
+  if(!wrap) return;
+  var bds=D.bds.filter(function(b){return bdTeamSel.length===0 || bdTeamSel.indexOf(b.team)>=0;})
     .slice().sort(function(a,b){return b.bid_amount-a.bid_amount;});
-  var h='<div class="chart-box full"><div class="section-title"><span class="dot"></span>销售个人业绩达成 ('+bds.length+'人'+(bdTeamFilter!=='全部'?' · '+bdTeamFilter:'')+')</div>'+
+  var label = bdTeamSel.length ? (bdTeamSel.length>1 ? ' · 已选'+bdTeamSel.length+'个团队' : ' · '+bdTeamSel.join(',')) : '';
+  var h='<div class="chart-box full"><div class="section-title"><span class="dot"></span>销售个人业绩达成 ('+bds.length+'人'+label+')</div>'+
     '<div class="scroll-x"><table class="data-table" id="bdTable"><thead><tr>'+
     '<th data-sort="rank" data-type="num">#</th><th data-sort="bname" data-type="str">姓名</th>'+
     '<th data-sort="bteam" data-type="str">团队</th>'+
@@ -551,6 +594,37 @@ function renderQ3(c){
   setTimeout(function(){renderQ3Sub('team');},50);
 }
 
+function renderQ3TeamTable(){
+  var wrap=document.getElementById('q3TeamTableWrap');
+  if(!wrap) return;
+  var list = q3TeamSel.length ? D.q3_team_predictions.filter(function(p){return q3TeamSel.indexOf(p.name)>=0;}) : D.q3_team_predictions.slice();
+  list=list.slice().sort(function(a,b){return b.q3_total_predict-a.q3_total_predict;});
+  var h='<div class="scroll-x"><table class="data-table" id="q3Table"><thead><tr>'+
+      '<th data-sort="q3name" data-type="str">团队</th><th class="num-header" data-sort="q3target" data-type="num">Q3目标</th>'+
+      '<th class="num-header" data-sort="q3july" data-type="num">7月实际</th>'+
+      '<th class="num-header" data-sort="q3julyito" data-type="num">7月ITO</th>'+
+      '<th class="num-header" data-sort="q3aug" data-type="num">8月预测</th>'+
+      '<th class="num-header" data-sort="q3sep" data-type="num">9月预测</th>'+
+      '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header">Q3达成率</th>'+
+      '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
+      '<th class="num-header" data-sort="q3cuma" data-type="num">截止Q3累计<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(1-9月)【预估】</span></th>'+
+      '<th class="num-header">累计达成率<br><span style="font-weight:400;font-size:9px">【预估】</span></th></tr></thead><tbody>';
+  list.forEach(function(p){
+    h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+p.july_actual+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+p.aug_predict+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
+      '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td><td class="num">'+fmtW(p.july_actual)+'</td>'+
+      '<td class="num">'+(p.july_ito>0?fmtW(p.july_ito):'-')+'</td>'+
+      '<td class="num">'+(p.aug_predict>0?fmtW(p.aug_predict):'-')+'</td><td class="num">'+(p.sep_predict>0?fmtW(p.sep_predict):'-')+'</td>'+
+      '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td>'+
+      '<td class="num"><span class="tag '+(p.q3_rate>=0.7?'tag-ok':p.q3_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.q3_rate)+'【预估】</span></td>'+
+      '<td class="num">'+fmtW(p.cum_target||0)+'</td>'+
+      '<td class="num hl">'+fmtW(p.cum_actual||0)+'</td>'+
+      '<td class="num"><span class="tag '+(p.cum_rate>=0.65?'tag-ok':p.cum_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.cum_rate||0)+'【预估】</span></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  wrap.innerHTML=h;
+  makeSortable('q3Table');
+}
+
 function renderQ3Sub(mode){
   var ct=document.getElementById('q3Content');
   document.querySelectorAll('.sub-nav button').forEach(function(b){b.classList.remove('active');});
@@ -569,30 +643,10 @@ function renderQ3Sub(mode){
       '<div class="kpi-card"><div class="kpi-label">8月预估总计</div><div class="kpi-value">'+fmtW(D.aug_total)+'</div><div class="kpi-sub">前序延期 '+fmtW(D.aug_prior)+'</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">9月预估总计</div><div class="kpi-value">'+fmtW(D.sep_total)+'</div><div class="kpi-sub">前序延期 '+fmtW(D.sep_prior)+'</div></div></div>';
 
+    var q3TeamNames=D.q3_team_predictions.map(function(p){return p.name;});
     h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>Q3团队预测明细</div>'+
-      '<div class="scroll-x"><table class="data-table" id="q3Table"><thead><tr>'+
-      '<th data-sort="q3name" data-type="str">团队</th><th class="num-header" data-sort="q3target" data-type="num">Q3目标</th>'+
-      '<th class="num-header" data-sort="q3july" data-type="num">7月实际</th>'+
-      '<th class="num-header" data-sort="q3julyito" data-type="num">7月ITO</th>'+
-      '<th class="num-header" data-sort="q3aug" data-type="num">8月预测</th>'+
-      '<th class="num-header" data-sort="q3sep" data-type="num">9月预测</th>'+
-      '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header">Q3达成率</th>'+
-      '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
-      '<th class="num-header" data-sort="q3cuma" data-type="num">截止Q3累计<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(1-9月)【预估】</span></th>'+
-      '<th class="num-header">累计达成率<br><span style="font-weight:400;font-size:9px">【预估】</span></th></tr></thead><tbody>';
-
-    D.q3_team_predictions.slice().sort(function(a,b){return b.q3_total_predict-a.q3_total_predict;}).forEach(function(p){
-      h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+p.july_actual+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+p.aug_predict+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
-        '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td><td class="num">'+fmtW(p.july_actual)+'</td>'+
-        '<td class="num">'+(p.july_ito>0?fmtW(p.july_ito):'-')+'</td>'+
-        '<td class="num">'+(p.aug_predict>0?fmtW(p.aug_predict):'-')+'</td><td class="num">'+(p.sep_predict>0?fmtW(p.sep_predict):'-')+'</td>'+
-        '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td>'+
-        '<td class="num"><span class="tag '+(p.q3_rate>=0.7?'tag-ok':p.q3_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.q3_rate)+'【预估】</span></td>'+
-        '<td class="num">'+fmtW(p.cum_target||0)+'</td>'+
-        '<td class="num hl">'+fmtW(p.cum_actual||0)+'</td>'+
-        '<td class="num"><span class="tag '+(p.cum_rate>=0.65?'tag-ok':p.cum_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.cum_rate||0)+'【预估】</span></td></tr>';
-    });
-    h+='</tbody></table></div></div>';
+      teamFilterBar('q3Team', q3TeamNames, q3TeamSel)+
+      '<div id="q3TeamTableWrap"></div></div>';
 
     h+='<div class="note-bar">注：上述 Q3 团队预测明细表格中的金额包含每个团队的 ITO 月度预估金额（按 202606 月签约额投影至 8/9 月）。</div>';
 
@@ -607,7 +661,8 @@ function renderQ3Sub(mode){
       '<span class="filter-label" style="margin-left:16px"><label style="cursor:pointer"><input type="checkbox" id="opPriorOnly" onchange="filterOpp(\'prior\',this.checked)"> 仅看前序延期</label></span>'+
       '</div><div id="oppDetailWrap"></div>';
     ct.innerHTML=h;
-    setTimeout(function(){makeSortable('q3Table');filterOpp('team','全部');},100);
+    renderQ3TeamTable();
+    setTimeout(function(){filterOpp('team','全部');},100);
   }else{
     var preds=D.q3_bd_predictions.slice().sort(function(a,b){return b.q3_total_predict-a.q3_total_predict;});
     var h='<div class="chart-box full"><div class="section-title"><span class="dot"></span>Q3个人预测 ('+preds.length+'人)</div>'+
