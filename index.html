@@ -393,19 +393,20 @@ function showTeamDetail(tn){
 
 function renderProductLine(c){
   var pls=D.product_lines;
-  var totalBid=pls.reduce(function(s,p){return s+p.ytd_bid;},0);
-  var totalTarget=pls.reduce(function(s,p){return s+p.year_target;},0);
+  var plsView=pls.filter(function(p){return p.name!=='产品线';});
+  var totalBid=plsView.reduce(function(s,p){return s+p.ytd_bid;},0);
+  var totalTarget=plsView.reduce(function(s,p){return s+p.year_target;},0);
   var h='<div class="kpi-row">'+
-    '<div class="kpi-card"><div class="kpi-label">产品线总数</div><div class="kpi-value">'+pls.length+'</div></div>'+
+    '<div class="kpi-card"><div class="kpi-label">产品线总数</div><div class="kpi-value">'+plsView.length+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD中标累计</div><div class="kpi-value">'+fmtW(totalBid)+'</div><div class="kpi-sub">达成率 '+pctV(totalBid/totalTarget)+'</div></div>'+
-    '<div class="kpi-card"><div class="kpi-label">1-7月达成</div><div class="kpi-value">'+fmtW(pls.reduce(function(s,p){return s+p.achieve_1_7;},0))+'</div><div class="kpi-sub">vs '+fmtW(pls.reduce(function(s,p){return s+p.target_1_7;},0))+'</div></div></div>';
+    '<div class="kpi-card"><div class="kpi-label">1-7月达成</div><div class="kpi-value">'+fmtW(plsView.reduce(function(s,p){return s+p.achieve_1_7;},0))+'</div><div class="kpi-sub">vs '+fmtW(plsView.reduce(function(s,p){return s+p.target_1_7;},0))+'</div></div></div>';
 
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>产品线达成情况</div><div class="scroll-x"><table class="data-table" id="plTable"><thead><tr>'+
     '<th data-sort="pname" data-type="str">产品线</th><th>一号位</th>'+
     '<th class="num-header" data-sort="pyt" data-type="num">YTD目标</th>'+
     '<th class="num-header" data-sort="pyb" data-type="num">YTD中标</th><th class="num-header">中标率</th>'+
     '<th class="num-header" data-sort="pt17" data-type="num">1-7目标</th><th class="num-header" data-sort="pa17" data-type="num">1-7达成</th><th class="num-header">达成率</th></tr></thead><tbody>';
-  pls.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(p){
+  plsView.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(p){
     h+='<tr data-pname="'+p.name+'" data-pyt="'+p.year_target+'" data-pyb="'+p.ytd_bid+'" data-pt17="'+p.target_1_7+'" data-pa17="'+p.achieve_1_7+'" onclick="showPlDetail(\''+p.name+'\')">'+
       '<td style="font-weight:600;cursor:pointer">'+p.name+'</td><td>'+p.leader+'</td>'+
       '<td class="num">'+fmtW(p.year_target)+'</td><td class="num hl">'+fmtW(p.ytd_bid)+'</td>'+
@@ -426,7 +427,7 @@ function renderProductLine(c){
   setTimeout(function(){
     makeSortable('plTable');
     var months=['1月','2月','3月','4月','5月','6月','7月'];
-    var plMonths=D.pl_order.filter(function(n){return D.product_lines.some(function(p){return p.name===n;});});
+    var plMonths=D.pl_order.filter(function(n){return n!=='产品线' && D.product_lines.some(function(p){return p.name===n;});});
     var ds=plMonths.map(function(name,i){
       var p=D.product_lines.find(function(x){return x.name===name;});
       return {label:name,data:p?p.monthly:[0,0,0,0,0,0,0],borderColor:C[i%C.length],backgroundColor:C[i%C.length]+'22',borderWidth:2,tension:.4,pointRadius:3,fill:false};
