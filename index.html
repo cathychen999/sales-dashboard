@@ -145,6 +145,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .gate-btn:hover{background:#0e47a8}
 .gate-err{color:#dc2626;font-size:12px;margin-top:10px;min-height:16px}
 .gate-foot{margin-top:18px;font-size:10.5px;color:#aab6c8}
+.data-table th.sortable{cursor:pointer}
+.data-table th.sortable::after{content:' ⇅';font-size:9px;color:#b8c4d4;font-weight:400;opacity:.55}
+.data-table th.sort-asc::after{content:' ▲';font-size:9px;color:#1a5fd9;font-weight:700}
+.data-table th.sort-desc::after{content:' ▼';font-size:9px;color:#1a5fd9;font-weight:700}
 
 </style>
 </head>
@@ -230,27 +234,53 @@ function progBar(val,pctVal,opt){
   return '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill '+c+'" style="width:'+w+'%"></div></div><span class="progress-text">'+label+'</span></div>';
 }
 let sortState={};
+// 将表格所有表头设为可排序（点击表头在升序/降序之间切换）。
+// 有 data-sort 的表头走 dataset 取值；其余表头按列序号取单元格文本（自动识别数值/文本）。
 function makeSortable(cid){
   const ct=document.getElementById(cid);
   if(!ct)return;
-  ct.querySelectorAll('th[data-sort]').forEach(th=>{
+  const head=ct.querySelector('thead');
+  if(!head)return;
+  const ths=Array.prototype.slice.call(head.querySelectorAll('th'));
+  ths.forEach(function(th,idx){
+    if(th.classList.contains('no-sort'))return;
+    th.classList.add('sortable');
     th.onclick=function(){
-      const key=this.dataset.sort,dir=sortState[key]==='asc'?'desc':'asc';
-      sortState[key]=dir;
-      ct.querySelectorAll('th').forEach(h=>h.classList.remove('sort-asc','sort-desc'));
-      this.classList.add(dir==='asc'?'sort-asc':'sort-desc');
-      sortTable(ct.querySelector('tbody'),key,dir,this.dataset.type);
+      const type=th.dataset.type==='num'?'num':'str';
+      const key=th.dataset.sort||null;
+      const skey=key||('__c'+idx);
+      const dir=sortState[skey]==='asc'?'desc':'asc';
+      sortState[skey]=dir;
+      ths.forEach(function(h){h.classList.remove('sort-asc','sort-desc');});
+      th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+      sortTable(ct.querySelector('tbody'),idx,type,key,dir);
     };
   });
 }
-function sortTable(tbody,key,dir,type){
-  const rows=Array.from(tbody.querySelectorAll('tr'));
-  rows.sort((a,b)=>{
-    let va=a.dataset[key]||'',vb=b.dataset[key]||'';
-    if(type==='num'){va=parseFloat(va)||0;vb=parseFloat(vb)||0;}
+function parseNum(s){
+  if(s==null)return 0;
+  var str=''+s;
+  var mult=1;
+  if(str.indexOf('亿')>=0)mult=10000;
+  str=str.replace(/[,\s%¥￥亿万]/g,'');
+  var m=str.match(/-?\d+(\.\d+)?/);
+  return m?parseFloat(m[0])*mult:0;
+}
+function sortTable(tbody,idx,type,key,dir){
+  const rows=Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+  rows.sort(function(a,b){
+    let va,vb;
+    if(key){ va=a.dataset[key]||''; vb=b.dataset[key]||''; }
+    else{
+      const ca=a.children[idx], cb=b.children[idx];
+      va=ca?ca.textContent:''; vb=cb?cb.textContent:'';
+    }
+    if(type==='num'){ va=parseNum(va); vb=parseNum(vb); }
+    else{ va=(''+va).trim(); vb=(''+vb).trim(); }
+    if(va===vb)return 0;
     return dir==='asc'?(va>vb?1:-1):(va<vb?1:-1);
   });
-  rows.forEach(r=>tbody.appendChild(r));
+  rows.forEach(function(r){ tbody.appendChild(r); });
 }
 function switchTab(tab){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -382,12 +412,12 @@ function renderTeamTable(){
   var h='<div class="scroll-x"><table class="data-table" id="teamTable"><thead><tr>'+
     '<th data-sort="name" data-type="str">团队</th><th data-sort="type" data-type="str">类别</th>'+
     '<th class="num-header" data-sort="year_target" data-type="num">年度目标</th>'+
-    '<th class="num-header" data-sort="ytd_bid" data-type="num">YTD中标</th><th class="num-header">达成率</th>'+
+    '<th class="num-header" data-sort="ytd_bid" data-type="num">YTD中标</th><th class="num-header" data-type="num">达成率</th>'+
     '<th class="num-header" data-sort="target_1_7" data-type="num">1-7月目标</th>'+
-    '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header">达成率</th>'+
-    '<th class="num-header">1月</th><th class="num-header">2月</th><th class="num-header">3月</th>'+
-    '<th class="num-header">4月</th><th class="num-header">5月</th><th class="num-header">6月</th><th class="num-header">7月</th>'+
-    '<th class="num-header">7月ITO实际</th><th class="num-header">7月必拿延迟</th><th class="num-header">7月必拿丢标</th></tr></thead><tbody>';
+    '<th class="num-header" data-sort="achieve_1_7" data-type="num">1-7月达成</th><th class="num-header" data-type="num">达成率</th>'+
+    '<th class="num-header" data-type="num">1月</th><th class="num-header" data-type="num">2月</th><th class="num-header" data-type="num">3月</th>'+
+    '<th class="num-header" data-type="num">4月</th><th class="num-header" data-type="num">5月</th><th class="num-header" data-type="num">6月</th><th class="num-header" data-type="num">7月</th>'+
+    '<th class="num-header" data-type="num">7月ITO实际</th><th class="num-header" data-type="num">7月必拿延迟</th><th class="num-header" data-type="num">7月必拿丢标</th></tr></thead><tbody>';
   list.forEach(function(t){
     h+='<tr onclick="showTeamDetail(\''+t.name+'\')" data-name="'+t.name+'" data-type="'+(t.type||'')+'" data-year_target="'+t.year_target+'" data-ytd_bid="'+t.ytd_bid+'" data-target_1_7="'+t.target_1_7+'" data-achieve_1_7="'+t.achieve_1_7+'">'+
       '<td style="font-weight:600">'+t.name+'</td><td><span class="tag tag-info">'+(t.type||'-')+'</span></td>'+
@@ -452,8 +482,8 @@ function renderProductLine(c){
   h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>产品线达成情况</div><div class="scroll-x"><table class="data-table" id="plTable"><thead><tr>'+
     '<th data-sort="pname" data-type="str">产品线</th><th>一号位</th>'+
     '<th class="num-header" data-sort="pyt" data-type="num">YTD目标</th>'+
-    '<th class="num-header" data-sort="pyb" data-type="num">YTD中标</th><th class="num-header">中标率</th>'+
-    '<th class="num-header" data-sort="pt17" data-type="num">1-7目标</th><th class="num-header" data-sort="pa17" data-type="num">1-7达成</th><th class="num-header">达成率</th></tr></thead><tbody>';
+    '<th class="num-header" data-sort="pyb" data-type="num">YTD中标</th><th class="num-header" data-type="num">中标率</th>'+
+    '<th class="num-header" data-sort="pt17" data-type="num">1-7目标</th><th class="num-header" data-sort="pa17" data-type="num">1-7达成</th><th class="num-header" data-type="num">达成率</th></tr></thead><tbody>';
   plsView.slice().sort(function(a,b){return b.ytd_bid-a.ytd_bid;}).forEach(function(p){
     h+='<tr data-pname="'+p.name+'" data-pyt="'+p.year_target+'" data-pyb="'+p.ytd_bid+'" data-pt17="'+p.target_1_7+'" data-pa17="'+p.achieve_1_7+'" onclick="showPlDetail(\''+p.name+'\')">'+
       '<td style="font-weight:600;cursor:pointer">'+p.name+'</td><td>'+p.leader+'</td>'+
@@ -542,8 +572,8 @@ function bdTableRender(){
     '<th data-sort="rank" data-type="num">#</th><th data-sort="bname" data-type="str">姓名</th>'+
     '<th data-sort="bteam" data-type="str">团队</th>'+
     '<th class="num-header" data-sort="byear_target" data-type="num">年度目标</th>'+
-    '<th class="num-header" data-sort="bbid" data-type="num">中标金额</th><th class="num-header">达成率</th>'+
-    '<th class="num-header" data-sort="bsign" data-type="num">签约金额</th><th class="num-header">达成率</th>'+
+    '<th class="num-header" data-sort="bbid" data-type="num">中标金额</th><th class="num-header" data-type="num">达成率</th>'+
+    '<th class="num-header" data-sort="bsign" data-type="num">签约金额</th><th class="num-header" data-type="num">达成率</th>'+
     '<th data-sort="bhire" data-type="str">入职时间</th></tr></thead><tbody>';
   bds.forEach(function(b,i){
     var newBadge=b.is_new?' <span class="tag tag-warn" style="font-size:10px;padding:1px 6px">新人</span>':'';
@@ -605,10 +635,10 @@ function renderQ3TeamTable(){
       '<th class="num-header" data-sort="q3julyito" data-type="num">7月ITO</th>'+
       '<th class="num-header" data-sort="q3aug" data-type="num">8月预测</th>'+
       '<th class="num-header" data-sort="q3sep" data-type="num">9月预测</th>'+
-      '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header">Q3达成率</th>'+
+      '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
       '<th class="num-header" data-sort="q3cuma" data-type="num">截止Q3累计<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(1-9月)【预估】</span></th>'+
-      '<th class="num-header">累计达成率<br><span style="font-weight:400;font-size:9px">【预估】</span></th></tr></thead><tbody>';
+      '<th class="num-header" data-type="num">累计达成率<br><span style="font-weight:400;font-size:9px">【预估】</span></th></tr></thead><tbody>';
   list.forEach(function(p){
     h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+p.july_actual+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+p.aug_predict+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
       '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td><td class="num">'+fmtW(p.july_actual)+'</td>'+
@@ -673,10 +703,10 @@ function renderQ3Sub(mode){
       '<th class="num-header" data-sort="q3bito" data-type="num">7月ITO</th>'+
       '<th class="num-header" data-sort="q3baug" data-type="num">8月预测</th>'+
       '<th class="num-header" data-sort="q3bsep" data-type="num">9月预测</th>'+
-      '<th class="num-header" data-sort="q3btotal" data-type="num">Q3合计</th><th class="num-header">Q3达成率</th>'+
+      '<th class="num-header" data-sort="q3btotal" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3bcumt" data-type="num">累计目标</th>'+
       '<th class="num-header" data-sort="q3bcuma" data-type="num">截止Q3累计</th>'+
-      '<th class="num-header">累计达成率</th></tr></thead><tbody>';
+      '<th class="num-header" data-type="num">累计达成率</th></tr></thead><tbody>';
     preds.forEach(function(p){
       h+='<tr data-q3bname="'+p.name+'" data-q3bteam="'+p.team+'" data-q3btarget="'+p.q3_target+'" data-q3bjuly="'+p.july_actual+'" data-q3bito="'+(p.july_ito||0)+'" data-q3baug="'+p.aug_predict+'" data-q3bsep="'+p.sep_predict+'" data-q3btotal="'+p.q3_total_predict+'" data-q3bcumt="'+(p.cum_target||0)+'" data-q3bcuma="'+(p.cum_actual||0)+'">'+
         '<td style="font-weight:600">'+p.name+'</td><td><span class="tag tag-info">'+p.team+'</span></td>'+
