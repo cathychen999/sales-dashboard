@@ -44,7 +44,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 
 /* Table */
 .data-table{width:100%;border-collapse:collapse;font-size:12px}
-.data-table thead{position:sticky;top:0;z-index:1}
+.data-table thead{position:sticky;top:56px;z-index:1}
 .data-table th{padding:10px 12px;text-align:left;font-weight:600;font-size:11px;color:#5a6b82;background:#f5f8fc;border-bottom:1px solid #e4eaf2;white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
 .data-table th:hover{color:#1a5fd9}
 .data-table th.sort-asc::after{content:' ▲';font-size:9px}
@@ -113,6 +113,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .summary-item strong{color:#1a5fd9}
 
 .scroll-x{overflow-x:auto}
+
+/* ============ 响应式：手机 / iPad / PC 自适应 ============ */
+/* 避免页面级横向溢出（这是手机上“不满屏/留白”的根因）：导航与表头在窄屏改为可横向滑动 */
+.nav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+
+/* iPad 竖屏及更窄：图表三列变两列 */
+@media(max-width:1024px){
+  .chart-row.col3{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+/* 手机为主（含 iPad 竖屏）：图表双列变单列，内容收窄 */
+@media(max-width:768px){
+  .content{padding:16px 14px}
+  .chart-row.col2{grid-template-columns:1fr}
+  .header h1{font-size:15px}
+}
+/* 手机（竖屏）：核心适配 */
+@media(max-width:600px){
+  .header{height:auto;min-height:50px;flex-wrap:wrap;padding:8px 14px}
+  .header h1{font-size:14px;line-height:1.25;white-space:normal}
+  .header-r{font-size:10px;gap:6px;margin-top:2px}
+  .data-table thead{top:64px}
+  .nav{padding:0 8px}
+  .nav-btn{padding:12px 14px;font-size:12px;flex:0 0 auto;white-space:nowrap}
+  .nav-btn.active::after{width:50%}
+  .content{padding:14px 12px}
+  /* KPI 卡片：覆盖内联的 3 列，改为自适应（手机约 2 列） */
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:10px}
+  .kpi-card{padding:13px 14px}
+  .kpi-value{font-size:22px}
+  .kpi-label{font-size:9.5px;letter-spacing:.5px}
+  .chart-box{padding:12px 12px}
+  .section-title{font-size:13px;margin-bottom:10px}
+  .chart-row.col3{grid-template-columns:1fr}
+  #plTeamCharts{grid-template-columns:1fr!important}
+  /* 表格在手机上更紧凑，仍保持横向滑动查看全部列 */
+  .data-table th,.data-table td{padding:8px 9px;font-size:11px}
+  .data-table th{font-size:10.5px}
+  .progress-wrap{min-width:84px;gap:6px}
+  .progress-text{min-width:34px;font-size:10px}
+  /* 子导航（团队/个人）可横向滑动 */
+  .sub-nav{width:100%;overflow-x:auto;flex-wrap:nowrap}
+  .sub-nav button{padding:8px 14px;flex:0 0 auto;white-space:nowrap}
+  /* 弹窗在手机上占满 */
+  .modal-overlay.show{padding-top:36px}
+  .modal{width:94%;max-height:86vh;padding:18px 14px}
+  .modal h2{font-size:15px}
+}
+/* 极小屏（≤360px） */
+@media(max-width:380px){
+  .header h1{font-size:13px}
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(132px,1fr))!important}
+  .content{padding:12px 10px}
+}
+/* 触屏点击反馈优化 */
+*{-webkit-tap-highlight-color:transparent}
 
 .summary-bar{display:flex;gap:6px;align-items:center;margin-bottom:14px;font-size:11px;color:#5a6b82;flex-wrap:wrap}
 .summary-bar .summary-item{white-space:nowrap;background:#eef2f8;padding:4px 10px;border-radius:4px;color:#5a6b82}
