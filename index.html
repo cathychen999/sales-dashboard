@@ -395,8 +395,17 @@ function teamToggle(prefix, btn){
   else bdTableRender();
 }
 
-function topSummaryBar(){
+// V11.12: topSummaryBar 支持传入上下文，使顶部8月金额与表格合计一致
+// ctx='team' → 取团队monthly[7]合计；ctx='pl' → 取产品线monthly[7]合计；默认取aug_won_total
+function topSummaryBar(ctx){
   var won=D.aug_won_total||0;
+  if(ctx==='team'){
+    var teamsView=(D.teams||[]).filter(function(t){return t.name!=='销售小组';});
+    won=teamsView.reduce(function(s,t){var m=t.monthly||[];return s+(m[7]||0);},0);
+  }else if(ctx==='pl'){
+    var plsView=(D.product_lines||[]).filter(function(p){return p.name!=='产品线';});
+    won=plsView.reduce(function(s,p){var m=p.monthly||[];return s+(m[7]||0);},0);
+  }
   var sign=D.summary.ytd_sign||0;
   var signRate=D.summary.ytd_sign_rate||0;
   return '<div class="nav-summary">'+
@@ -412,7 +421,7 @@ function renderTeam(c){
   var julyDelayTotal=0,julyLossTotal=0,julyItoTotal=0;
   teams.forEach(function(t){julyDelayTotal+=t.july_delay||0;julyLossTotal+=t.july_loss||0;julyItoTotal+=t.july_ito_actual||0;});
 
-  var h=topSummaryBar()+'<div class="kpi-row">'+
+  var h=topSummaryBar('team')+'<div class="kpi-row">'+
     '<div class="kpi-card"><div class="kpi-label">年度签约目标</div><div class="kpi-value">'+fmtW(D.summary.year_target)+'</div><div class="kpi-sub">'+D.summary.team_count+'个团队</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD中标累计</div><div class="kpi-value">'+fmtW(D.summary.ytd_bid)+'</div><div class="kpi-sub">达成率 '+pctV(D.summary.ytd_bid_rate)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD签约累计</div><div class="kpi-value">'+fmtW(D.summary.ytd_sign)+'</div><div class="kpi-sub">达成率 '+pctV(D.summary.ytd_sign_rate)+'</div></div>'+
@@ -556,7 +565,7 @@ function renderProductLine(c){
   var plsView=pls.filter(function(p){return p.name!=='产品线';});
   var totalBid=plsView.reduce(function(s,p){return s+p.ytd_bid;},0);
   var totalTarget=plsView.reduce(function(s,p){return s+p.year_target;},0);
-  var h=topSummaryBar()+'<div class="kpi-row">'+
+  var h=topSummaryBar('pl')+'<div class="kpi-row">'+
     '<div class="kpi-card"><div class="kpi-label">产品线总数</div><div class="kpi-value">'+plsView.length+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD中标累计</div><div class="kpi-value">'+fmtW(totalBid)+'</div><div class="kpi-sub">达成率 '+pctV(totalBid/totalTarget)+'</div></div>'+
     '<div class="kpi-card"><div class="kpi-label">YTD签约达成</div><div class="kpi-value">'+fmtW(plsView.reduce(function(s,p){var mm=p.monthly||[];for(var i=0;i<8;i++){s+=(mm[i]||0);}return s;},0))+'</div><div class="kpi-sub">1-8月累计签约达成</div></div></div>';
@@ -741,7 +750,7 @@ function renderQ3TeamTable(){
       '<th data-sort="q3name" data-type="str">团队</th><th class="num-header" data-sort="q3target" data-type="num">Q3目标</th>'+
       '<th class="num-header" data-sort="q3july" data-type="num">7月实际</th>'+
       '<th class="num-header" data-sort="q3julyito" data-type="num">7月ITO</th>'+
-      '<th class="num-header" data-sort="q3aug" data-type="num">8月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(商机+ITO)</span></th>'+
+      '<th class="num-header" data-sort="q3aug" data-type="num">8月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(商机+中标+ITO)</span></th>'+
       '<th class="num-header" data-sort="q3sep" data-type="num">9月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(商机+ITO)</span></th>'+
       '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
@@ -751,7 +760,7 @@ function renderQ3TeamTable(){
     h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+p.july_actual+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+p.aug_predict+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
       '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td><td class="num">'+fmtW(p.july_actual)+'</td>'+
       '<td class="num">'+(p.july_ito>0?fmtW(p.july_ito):'-')+'</td>'+
-      '<td class="num">'+(p.aug_predict>0?'<div style="font-weight:600">'+fmtW(p.aug_predict)+'</div>'+(p.aug_ito>0?'<div style="font-size:9px;color:#8a99ae">含ITO'+fmtW(p.aug_ito)+'</div>':''):'-')+'</td>'+
+      '<td class="num">'+(p.aug_predict>0?'<div style="font-weight:600">'+fmtW(p.aug_predict)+'</div>'+'<div style="font-size:9px;color:#8a99ae">商机'+fmtW(p.aug_opp||0)+(p.aug_ito>0?'+ITO'+fmtW(p.aug_ito):'')+(p.aug_won>0?'+中标'+fmtW(p.aug_won):'')+'</div>':'-')+'</td>'+
       '<td class="num">'+(p.sep_predict>0?'<div style="font-weight:600">'+fmtW(p.sep_predict)+'</div>'+(p.sep_ito>0?'<div style="font-size:9px;color:#8a99ae">含ITO'+fmtW(p.sep_ito)+'</div>':''):'-')+'</td>'+
       '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td>'+
       '<td class="num"><span class="tag '+(p.q3_rate>=0.7?'tag-ok':p.q3_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.q3_rate)+'【预估】</span></td>'+
@@ -786,7 +795,7 @@ function renderQ3Sub(mode){
       teamFilterBar('q3Team', q3TeamNames, q3TeamSel)+
       '<div id="q3TeamTableWrap"></div></div>';
 
-    h+='<div class="note-bar">注：①上述 Q3 团队预测明细中「8月/9月预测」= 必拿商机 + ITO预估（ITO按 7月实际达成数据投影至 8/9 月），表格内已展示ITO拆分；②下方「必拿商机明细」仅展示商机部分（不含ITO），筛选后可在KPI卡片查看对应Q3预测含ITO的合计值进行对照。</div>';
+    h+='<div class="note-bar">注：①上述 Q3 团队预测明细中「8月预测」= 必拿商机 + 8月已中标金额 + ITO预估；「9月预测」= 必拿商机 + ITO预估（ITO按 7月实际达成数据投影至 8/9 月），表格内已展示拆分；②下方「必拿商机明细」仅展示商机部分（不含ITO和中标），筛选后可在KPI卡片查看对应Q3预测含ITO的合计值进行对照。</div>';
 
     // --- V11.10: 8月中标项目明细（数据来自 bid_projects，month_str=202608）---
     var augBids=D.bid_projects.filter(function(p){return p.month_str==='202608';});
@@ -803,13 +812,12 @@ function renderQ3Sub(mode){
       '<th data-sort="abindustry" data-type="str">行业</th>'+
       '<th data-sort="abcat" data-type="str">一位行业归类</th>'+
       '<th data-sort="abpl" data-type="str">主产品线</th>'+
-      '<th class="num-header" data-sort="abbid" data-type="num">离竞中标金额(KPI计入)</th>'+
       '<th class="num-header" data-sort="abcontract" data-type="num">合同金额(中标)</th>'+
       '<th data-sort="abmonth" data-type="str">中标月份</th></tr></thead><tbody>';
-    augBids.slice().sort(function(a,b){return (b.bid_amount_wan||0)-(a.bid_amount_wan||0);}).forEach(function(p){
+    augBids.slice().sort(function(a,b){return (b.contract_amount_wan||0)-(a.contract_amount_wan||0);}).forEach(function(p){
       var ctype=p.type||'';
       var ctypeTag = ctype.indexOf('CR')>=0?'CR' : (ctype.indexOf('运维')>=0?'运维' : (ctype.indexOf('账单')>=0?'账单':'其他'));
-      h+='<tr data-abdate="'+p.date+'" data-abteam="'+p.team+'" data-abbd="'+p.bd+'" data-abclient="'+p.client+'" data-abproject="'+p.project+'" data-abtype="'+ctype+'" data-abindustry="'+p.industry+'" data-abcat="'+p.owner_category+'" data-abpl="'+p.product_line+'" data-abbid="'+p.bid_amount_wan+'" data-abcontract="'+p.contract_amount_wan+'" data-abmonth="'+p.month_str+'">'+
+      h+='<tr data-abdate="'+p.date+'" data-abteam="'+p.team+'" data-abbd="'+p.bd+'" data-abclient="'+p.client+'" data-abproject="'+p.project+'" data-abtype="'+ctype+'" data-abindustry="'+p.industry+'" data-abcat="'+p.owner_category+'" data-abpl="'+p.product_line+'" data-abcontract="'+p.contract_amount_wan+'" data-abmonth="'+p.month_str+'">'+
         '<td>'+p.date+'</td>'+
         '<td><span class="tag tag-info">'+p.team+'</span></td>'+
         '<td>'+p.bd+'</td>'+
@@ -819,7 +827,6 @@ function renderQ3Sub(mode){
         '<td>'+p.industry+'</td>'+
         '<td>'+p.owner_category+'</td>'+
         '<td>'+p.product_line+'</td>'+
-        '<td class="num hl">'+fmtW(p.bid_amount_wan)+'</td>'+
         '<td class="num">'+fmtW(p.contract_amount_wan)+'</td>'+
         '<td>'+p.month_str+'</td></tr>';
     });
@@ -847,8 +854,8 @@ function renderQ3Sub(mode){
       '<th class="num-header" data-sort="q3btarget" data-type="num">Q3目标</th>'+
       '<th class="num-header" data-sort="q3bjuly" data-type="num">7月实际</th>'+
       '<th class="num-header" data-sort="q3bito" data-type="num">7月ITO</th>'+
-      '<th class="num-header" data-sort="q3baug" data-type="num">8月预测</th>'+
-      '<th class="num-header" data-sort="q3bsep" data-type="num">9月预测</th>'+
+      '<th class="num-header" data-sort="q3baug" data-type="num">8月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(商机+中标+ITO)</span></th>'+
+      '<th class="num-header" data-sort="q3bsep" data-type="num">9月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(商机+ITO)</span></th>'+
       '<th class="num-header" data-sort="q3btotal" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3bcumt" data-type="num">累计目标</th>'+
       '<th class="num-header" data-sort="q3bcuma" data-type="num">截止Q3累计</th>'+
