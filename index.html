@@ -784,11 +784,13 @@ function renderQ3Sub(mode){
     D.q3_team_predictions.forEach(function(p){totalQ3Predict+=p.q3_total_predict;totalQ3Target+=p.q3_target;totalJulyIto+=p.july_ito||0;});
     var julyAll=0;D.q3_team_predictions.forEach(function(p){julyAll+=p.july_actual;});
     var augSep=0;D.q3_team_predictions.forEach(function(p){augSep+=p.aug_predict+p.sep_predict;});
+    var augPredSum=0,sepPredSum=0;
+    D.q3_team_predictions.forEach(function(p){augPredSum+=p.aug_predict;sepPredSum+=p.sep_predict;});
     var h='<div class="kpi-row">'+
       '<div class="kpi-card"><div class="kpi-label">Q3预测总金额</div><div class="kpi-value">'+fmtW(totalQ3Predict)+'</div><div class="kpi-sub">vs 目标 '+fmtW(totalQ3Target)+' | '+pctV(totalQ3Predict/totalQ3Target)+'【预估】</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">7月实际中标</div><div class="kpi-value">'+fmtW(julyAll)+'</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">8月预估总计</div><div class="kpi-value">'+fmtW(D.aug_total)+'</div><div class="kpi-sub">前序延期 '+fmtW(D.aug_prior)+'</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">9月预估总计</div><div class="kpi-value">'+fmtW(D.sep_total)+'</div><div class="kpi-sub">前序延期 '+fmtW(D.sep_prior)+'</div></div></div>';
+      '<div class="kpi-card"><div class="kpi-label">8月预测总计</div><div class="kpi-value">'+fmtW(augPredSum)+'</div><div class="kpi-sub">含已中标+ITO（与表格一致）</div></div>'+
+      '<div class="kpi-card"><div class="kpi-label">9月预测总计</div><div class="kpi-value">'+fmtW(sepPredSum)+'</div><div class="kpi-sub">含ITO（与表格一致）</div></div></div>';
 
     var q3TeamNames=D.q3_team_predictions.map(function(p){return p.name;});
     h+='<div class="chart-box full"><div class="section-title"><span class="dot"></span>Q3团队预测明细</div>'+
