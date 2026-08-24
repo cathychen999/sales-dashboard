@@ -7625,10 +7625,8 @@ function renderClient(c){
   plNames.unshift('产线分类');
   var plOpts=plNames.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('');
 
-  // Industry options from actual data
-  var indSet={};
-  D.clients.forEach(function(cl){ if(cl.industry) indSet[cl.industry]=1; });
-  var indNames=Object.keys(indSet).sort();
+  // Industry options = 5大类（与上方汇总表一致，不再细分行业）
+  var indNames=(D.client_category_summary||[]).map(function(x){return x.category;});
   indNames.unshift('行业分类');
   var indOpts=indNames.map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('');
 
@@ -7648,7 +7646,7 @@ function renderClient(c){
     var cWon=(drill.projects||[]).reduce(function(s,p){return s+(p.sign_amount_wan||0);},0);
     var cOpp=(drill.opps||[]).reduce(function(s,o){return s+(o.amount_wan||0);},0);
     var cIto=(drill.ito_items||[]).reduce(function(s,it){return s+(it.kpi_amount||0);},0)/10000;
-    h+='<div class="client-card" data-name="'+cl.name+'" data-ind="'+(cl.industry||'')+'" data-pl="'+(cl.product_line||'')+'" data-total="'+cl.total_wan+'" data-won="'+cWon+'" data-opp="'+cOpp+'" data-ito="'+cIto+'" onclick="showClientDetail(\''+cl.name+'\')"><div class="client-rank '+rCls+'">'+rank+'</div>'+
+    h+='<div class="client-card" data-name="'+cl.name+'" data-ind="'+(cl.category||'')+'" data-pl="'+(cl.product_line||'')+'" data-total="'+cl.total_wan+'" data-won="'+cWon+'" data-opp="'+cOpp+'" data-ito="'+cIto+'" onclick="showClientDetail(\''+cl.name+'\')"><div class="client-rank '+rCls+'">'+rank+'</div>'+
       '<div class="client-name">'+cl.name+'</div><div class="client-meta"><span class="tag tag-info">'+(cl.industry||'-')+'</span>'+
       '<span class="tag tag-warn" style="font-size:11px">'+(cl.product_line||'-')+'</span>'+
       '<span style="color:#6b7a90">'+cl.project_count+'单中标 + '+cl.ito_count+'单ITO'+(drill.opps&&drill.opps.length?(' + '+drill.opps.length+'单商机'):'')+'</span></div>'+
