@@ -7415,8 +7415,8 @@ function renderQ3TeamTable(){
   list=list.slice().sort(function(a,b){return b.q3_total_predict-a.q3_total_predict;});
   var h='<div class="scroll-x"><table class="data-table" id="q3Table"><thead><tr>'+
       '<th data-sort="q3name" data-type="str">团队</th><th class="num-header" data-sort="q3target" data-type="num">Q3目标</th>'+
-      '<th class="num-header" data-sort="q3july" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
-      '<th class="num-header" data-sort="q3aug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
+      '<th class="num-header" data-sort="q3july" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(项目AB列+ITO V列)</span></th>'+
+      '<th class="num-header" data-sort="q3aug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(项目AB列+ITO V列)</span></th>'+
       '<th class="num-header" data-sort="q3sep" data-type="num">9月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(必拿+ITO预估)</span></th>'+
       '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
@@ -7454,8 +7454,8 @@ function renderQ3Sub(mode){
     D.q3_team_predictions.forEach(function(p){augPredSum+=(p.aug_actual||0);sepPredSum+=p.sep_predict;});
     var h='<div class="kpi-row">'+
       '<div class="kpi-card"><div class="kpi-label">Q3预测总金额</div><div class="kpi-value">'+fmtW(totalQ3Predict)+'</div><div class="kpi-sub">vs 目标 '+fmtW(totalQ3Target)+' | '+pctV(totalQ3Predict/totalQ3Target)+'【预估】</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">7月实际(源表达成)</div><div class="kpi-value">'+fmtW(julyAll)+'</div><div class="kpi-sub">与团队达成页 7月列一致（含ITO）</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">8月实际总计</div><div class="kpi-value">'+fmtW(augPredSum)+'</div><div class="kpi-sub">源表 8月达成列合计（含ITO）</div></div>'+
+      '<div class="kpi-card"><div class="kpi-label">7月实际</div><div class="kpi-value">'+fmtW(julyAll)+'</div><div class="kpi-sub">项目表AB列+ITO表V列（与团队达成页7月列一致）</div></div>'+
+      '<div class="kpi-card"><div class="kpi-label">8月实际总计</div><div class="kpi-value">'+fmtW(augPredSum)+'</div><div class="kpi-sub">项目表AB列+ITO表V列（与团队达成页8月列一致）</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">9月预测总计</div><div class="kpi-value">'+fmtW(sepPredSum)+'</div><div class="kpi-sub">必拿+ITO预估按8月实际（与表格一致）</div></div></div>';
 
     var q3TeamNames=D.q3_team_predictions.map(function(p){return p.name;});
@@ -7463,7 +7463,7 @@ function renderQ3Sub(mode){
       teamFilterBar('q3Team', q3TeamNames, q3TeamSel)+
       '<div id="q3TeamTableWrap"></div></div>';
 
-    h+='<div class="note-bar">注：①上述 Q3 团队预测明细中「7月实际」= 源表 7月达成列（含ITO，与团队达成页一致）；「8月实际」= 源表 8月达成列（含ITO）；「9月预测」= 9月必拿商机 + ITO预估（按8月ITO实际外推）；②下方「必拿商机明细」仅展示 9月/10月必拿商机部分（不含ITO和中标），筛选后可在KPI卡片查看对应预测含ITO的合计值进行对照。</div>';
+    h+='<div class="note-bar">注：①「7月实际 / 8月实际」= 项目签约进度表 <b>O列(团队)×AB列(KPI商务中标金额)</b> 按中标月份 + ITO结算表 <b>F列(团队)×V列(签约额销售KPI)</b> 按归属月，与源表「销售达成情况」团队行取数逻辑一致（已逐团队核对）；②「9月预测」= 9月必拿商机 + ITO预估（按8月ITO实际外推）；③下方「必拿商机明细」仅展示 9月/10月必拿商机部分（不含ITO和中标）。</div>';
 
     // --- V11.21: 9月中标项目明细（数据来自 sep_bid_projects，month_str=202609）---
     var augBids=(D.sep_bid_projects||D.bid_projects.filter(function(p){return p.month_str==='202609';})).slice();
