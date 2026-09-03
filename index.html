@@ -7415,19 +7415,18 @@ function renderQ3TeamTable(){
   list=list.slice().sort(function(a,b){return b.q3_total_predict-a.q3_total_predict;});
   var h='<div class="scroll-x"><table class="data-table" id="q3Table"><thead><tr>'+
       '<th data-sort="q3name" data-type="str">团队</th><th class="num-header" data-sort="q3target" data-type="num">Q3目标</th>'+
-      '<th class="num-header" data-sort="q3july" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(项目+ITO)</span></th>'+
-      '<th class="num-header" data-sort="q3aug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(中标+ITO实际)</span></th>'+
+      '<th class="num-header" data-sort="q3july" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
+      '<th class="num-header" data-sort="q3aug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
       '<th class="num-header" data-sort="q3sep" data-type="num">9月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(必拿+ITO预估)</span></th>'+
       '<th class="num-header" data-sort="q3total" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3cumt" data-type="num">累计目标<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(年度×80%)</span></th>'+
       '<th class="num-header" data-sort="q3cuma" data-type="num">截止Q3累计<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(1-9月)【预估】</span></th>'+
       '<th class="num-header" data-type="num">累计达成率<br><span style="font-weight:400;font-size:9px">【预估】</span></th></tr></thead><tbody>';
   list.forEach(function(p){
-    var julyComb=(p.july_actual||0)+(p.july_ito||0);
-    h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+julyComb+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+(p.aug_actual||0)+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
+    h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+(p.july_actual||0)+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+(p.aug_actual||0)+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
       '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td>'+
-      '<td class="num">'+(julyComb>0?'<div style="font-weight:600">'+fmtW(julyComb)+'</div>'+(p.july_ito>0?'<div style="font-size:9px;color:#8a99ae">项目'+fmtW(p.july_actual||0)+(p.july_ito>0?'+ITO'+fmtW(p.july_ito):'')+'</div>':''):'-')+'</td>'+
-      '<td class="num">'+(p.aug_actual>0?'<div style="font-weight:600">'+fmtW(p.aug_actual)+'</div>'+'<div style="font-size:9px;color:#8a99ae">中标'+fmtW(p.aug_won||0)+(p.aug_ito_actual>0?'+ITO'+fmtW(p.aug_ito_actual):'')+'</div>':'-')+'</td>'+
+      '<td class="num">'+((p.july_actual>0?'<div style="font-weight:600">'+fmtW(p.july_actual)+'</div>':'-')+'</td>'+
+      '<td class="num">'+(p.aug_actual>0?'<div style="font-weight:600">'+fmtW(p.aug_actual)+'</div>':'-')+'</td>'+
       '<td class="num">'+(p.sep_predict>0?'<div style="font-weight:600">'+fmtW(p.sep_predict)+'</div>'+(p.sep_ito>0?'<div style="font-size:9px;color:#8a99ae">含ITO'+fmtW(p.sep_ito)+'</div>':''):'-')+'</td>'+
       '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td>'+
       '<td class="num"><span class="tag '+(p.q3_rate>=0.7?'tag-ok':p.q3_rate>=0.4?'tag-warn':'tag-danger')+'">'+pctV(p.q3_rate)+'【预估】</span></td>'+
@@ -7455,8 +7454,8 @@ function renderQ3Sub(mode){
     D.q3_team_predictions.forEach(function(p){augPredSum+=(p.aug_actual||0);sepPredSum+=p.sep_predict;});
     var h='<div class="kpi-row">'+
       '<div class="kpi-card"><div class="kpi-label">Q3预测总金额</div><div class="kpi-value">'+fmtW(totalQ3Predict)+'</div><div class="kpi-sub">vs 目标 '+fmtW(totalQ3Target)+' | '+pctV(totalQ3Predict/totalQ3Target)+'【预估】</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">7月实际(项目+ITO)</div><div class="kpi-value">'+fmtW(julyAll+totalJulyIto)+'</div><div class="kpi-sub">与表格 7月实际列一致</div></div>'+
-      '<div class="kpi-card"><div class="kpi-label">8月实际总计</div><div class="kpi-value">'+fmtW(augPredSum)+'</div><div class="kpi-sub">中标实际+ITO实际（与表格一致）</div></div>'+
+      '<div class="kpi-card"><div class="kpi-label">7月实际(源表达成)</div><div class="kpi-value">'+fmtW(julyAll)+'</div><div class="kpi-sub">与团队达成页 7月列一致（含ITO）</div></div>'+
+      '<div class="kpi-card"><div class="kpi-label">8月实际总计</div><div class="kpi-value">'+fmtW(augPredSum)+'</div><div class="kpi-sub">源表 8月达成列合计（含ITO）</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">9月预测总计</div><div class="kpi-value">'+fmtW(sepPredSum)+'</div><div class="kpi-sub">必拿+ITO预估按8月实际（与表格一致）</div></div></div>';
 
     var q3TeamNames=D.q3_team_predictions.map(function(p){return p.name;});
@@ -7464,7 +7463,7 @@ function renderQ3Sub(mode){
       teamFilterBar('q3Team', q3TeamNames, q3TeamSel)+
       '<div id="q3TeamTableWrap"></div></div>';
 
-    h+='<div class="note-bar">注：①上述 Q3 团队预测明细中「8月实际」= 8月已中标金额 + 8月ITO实际达成；「9月预测」= 9月必拿商机 + ITO预估（ITO按 8月实际达成数据预估），表格内已展示拆分；②下方「必拿商机明细」仅展示 9月/10月必拿商机部分（不含ITO和中标），筛选后可在KPI卡片查看对应预测含ITO的合计值进行对照。</div>';
+    h+='<div class="note-bar">注：①上述 Q3 团队预测明细中「7月实际」= 源表 7月达成列（含ITO，与团队达成页一致）；「8月实际」= 源表 8月达成列（含ITO）；「9月预测」= 9月必拿商机 + ITO预估（按8月ITO实际外推）；②下方「必拿商机明细」仅展示 9月/10月必拿商机部分（不含ITO和中标），筛选后可在KPI卡片查看对应预测含ITO的合计值进行对照。</div>';
 
     // --- V11.21: 9月中标项目明细（数据来自 sep_bid_projects，month_str=202609）---
     var augBids=(D.sep_bid_projects||D.bid_projects.filter(function(p){return p.month_str==='202609';})).slice();
@@ -7521,19 +7520,18 @@ function renderQ3Sub(mode){
       '<div class="scroll-x"><table class="data-table" id="q3BdTable"><thead><tr>'+
       '<th data-sort="q3bname" data-type="str">姓名</th><th data-sort="q3bteam" data-type="str">团队</th>'+
       '<th class="num-header" data-sort="q3btarget" data-type="num">Q3目标</th>'+
-      '<th class="num-header" data-sort="q3bjuly" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(项目+ITO)</span></th>'+
-      '<th class="num-header" data-sort="q3baug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(中标+ITO实际)</span></th>'+
+      '<th class="num-header" data-sort="q3bjuly" data-type="num">7月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
+      '<th class="num-header" data-sort="q3baug" data-type="num">8月实际<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(源表达成·含ITO)</span></th>'+
       '<th class="num-header" data-sort="q3bsep" data-type="num">9月预测<br><span style="font-weight:400;font-size:9px;color:#8a99ae">(必拿+ITO预估)</span></th>'+
       '<th class="num-header" data-sort="q3btotal" data-type="num">Q3合计</th><th class="num-header" data-type="num">Q3达成率</th>'+
       '<th class="num-header" data-sort="q3bcumt" data-type="num">累计目标</th>'+
       '<th class="num-header" data-sort="q3bcuma" data-type="num">截止Q3累计</th>'+
       '<th class="num-header" data-type="num">累计达成率</th></tr></thead><tbody>';
     preds.forEach(function(p){
-      var julyCombB=(p.july_actual||0)+(p.july_ito||0);
-      h+='<tr data-q3bname="'+p.name+'" data-q3bteam="'+p.team+'" data-q3btarget="'+p.q3_target+'" data-q3bjuly="'+julyCombB+'" data-q3bito="'+(p.july_ito||0)+'" data-q3baug="'+(p.aug_actual||0)+'" data-q3bsep="'+p.sep_predict+'" data-q3btotal="'+p.q3_total_predict+'" data-q3bcumt="'+(p.cum_target||0)+'" data-q3bcuma="'+(p.cum_actual||0)+'">'+
+      h+='<tr data-q3bname="'+p.name+'" data-q3bteam="'+p.team+'" data-q3btarget="'+p.q3_target+'" data-q3bjuly="'+(p.july_actual||0)+'" data-q3bito="'+(p.july_ito||0)+'" data-q3baug="'+(p.aug_actual||0)+'" data-q3bsep="'+p.sep_predict+'" data-q3btotal="'+p.q3_total_predict+'" data-q3bcumt="'+(p.cum_target||0)+'" data-q3bcuma="'+(p.cum_actual||0)+'">'+
         '<td style="font-weight:600">'+p.name+'</td><td><span class="tag tag-info">'+p.team+'</span></td>'+
         '<td class="num">'+fmtW(p.q3_target)+'</td>'+
-        '<td class="num">'+(julyCombB>0?fmtW(julyCombB):'-')+'</td>'+
+        '<td class="num">'+((p.july_actual>0)?fmtW(p.july_actual):'-')+'</td>'+
         '<td class="num">'+(p.aug_actual>0?fmtW(p.aug_actual):'-')+'</td><td class="num">'+(p.sep_predict>0?fmtW(p.sep_predict):'-')+'</td>'+
         '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td><td class="num">'+pctV(p.q3_rate)+'</td>'+
         '<td class="num">'+fmtW(p.cum_target||0)+'</td>'+
