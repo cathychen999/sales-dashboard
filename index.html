@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年众安信科销售业绩看板 V11.7</title>
+<title>2026年众安信科销售业绩看板 V11.22</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','SF Pro Display','Segoe UI',Roboto,sans-serif;background:#eef1f7;color:#1f2d44;min-height:100vh;font-size:13px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -216,7 +216,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 <body>
 <div class="header">
   <div class="header-l"><div class="logo">众</div><h1>2026年众安信科销售业绩看板</h1></div>
-  <div class="header-r"><span class="live-dot"></span>数据版本: 2026-08-10 (V11.7)</div>
+  <div class="header-r"><span class="live-dot"></span>数据版本: 2026-09-03 (V11.22)</div>
 </div>
 <div class="nav">
   <button class="nav-btn active" data-tab="team" onclick="switchTab('team')">销售团队总揽</button>
@@ -7425,7 +7425,7 @@ function renderQ3TeamTable(){
   list.forEach(function(p){
     h+='<tr data-q3name="'+p.name+'" data-q3target="'+p.q3_target+'" data-q3july="'+(p.july_actual||0)+'" data-q3julyito="'+(p.july_ito||0)+'" data-q3aug="'+(p.aug_actual||0)+'" data-q3sep="'+p.sep_predict+'" data-q3total="'+p.q3_total_predict+'" data-q3cumt="'+(p.cum_target||0)+'" data-q3cuma="'+(p.cum_actual||0)+'">'+
       '<td style="font-weight:600">'+p.name+'</td><td class="num">'+fmtW(p.q3_target)+'</td>'+
-      '<td class="num">'+((p.july_actual>0?'<div style="font-weight:600">'+fmtW(p.july_actual)+'</div>':'-')+'</td>'+
+      '<td class="num">'+(p.july_actual>0?'<div style="font-weight:600">'+fmtW(p.july_actual)+'</div>':'-')+'</td>'+
       '<td class="num">'+(p.aug_actual>0?'<div style="font-weight:600">'+fmtW(p.aug_actual)+'</div>':'-')+'</td>'+
       '<td class="num">'+(p.sep_predict>0?'<div style="font-weight:600">'+fmtW(p.sep_predict)+'</div>'+(p.sep_ito>0?'<div style="font-size:9px;color:#8a99ae">含ITO'+fmtW(p.sep_ito)+'</div>':''):'-')+'</td>'+
       '<td class="num hl">'+fmtW(p.q3_total_predict)+'</td>'+
