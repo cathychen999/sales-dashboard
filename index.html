@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年众安信科销售业绩看板 V11.30</title>
+<title>2026年众安信科销售业绩看板 V11.31</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','SF Pro Display','Segoe UI',Roboto,sans-serif;background:#eef1f7;color:#1f2d44;min-height:100vh;font-size:13px;line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -216,7 +216,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 <body>
 <div class="header">
   <div class="header-l"><div class="logo">众</div><h1>2026年众安信科销售业绩看板</h1></div>
-  <div class="header-r"><span class="live-dot"></span>数据版本: 2026-09-17 (V11.30 · 9月必拿延期调整按团队展示)</div>
+  <div class="header-r"><span class="live-dot"></span>数据版本: 2026-09-17 (V11.31 · 修复金额单位重复显示"万万")</div>
 </div>
 <div class="nav">
   <button class="nav-btn active" data-tab="team" onclick="switchTab('team')">销售团队总揽</button>
@@ -7570,13 +7570,13 @@ function renderSepDeferred(){
   if(!d||!d.groups||!d.groups.length)return '';
   function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
   var html='<div style="margin:4px 0 14px;padding:14px 16px;border:1px solid #ffe0b2;border-left:4px solid #ff9800;border-radius:8px;background:#fffaf2">';
-  html+='<div style="font-weight:700;font-size:14px;color:#b26a00;margin-bottom:8px">📌 9月必拿 · 延期调整 <span style="font-weight:400;font-size:11px;color:#a07a3a">（对比 '+esc(d.baseline_date)+' → '+esc(d.current_date)+'，共 '+d.total_count+' 条 · 合计 '+fmtW(d.total_amount_wan)+'万；均为预计中标时间推迟到后续月份，按团队列出）</span></div>';
+  html+='<div style="font-weight:700;font-size:14px;color:#b26a00;margin-bottom:8px">📌 9月必拿 · 延期调整 <span style="font-weight:400;font-size:11px;color:#a07a3a">（对比 '+esc(d.baseline_date)+' → '+esc(d.current_date)+'，共 '+d.total_count+' 条 · 合计 '+fmtW(d.total_amount_wan)+'；均为预计中标时间推迟到后续月份，按团队列出）</span></div>';
   d.groups.forEach(function(g){
     html+='<div style="margin:8px 0">';
-    html+='<div style="font-weight:600;font-size:13px;color:#8a5a00;margin-bottom:2px">【'+esc(g.team)+'】<span style="font-weight:400;color:#a07a3a;font-size:11px"> '+g.count+'条 · '+fmtW(g.amount_wan)+'万</span></div>';
+    html+='<div style="font-weight:600;font-size:13px;color:#8a5a00;margin-bottom:2px">【'+esc(g.team)+'】<span style="font-weight:400;color:#a07a3a;font-size:11px"> '+g.count+'条 · '+fmtW(g.amount_wan)+'</span></div>';
     html+='<div style="padding-left:16px;font-size:12.5px;line-height:1.9;color:#5a4a2a">';
     g.items.forEach(function(it){
-      var amt=(it.amount_wan?' · '+fmtW(it.amount_wan)+'万':'');
+      var amt=(it.amount_wan?' · '+fmtW(it.amount_wan):'');
       var nt=(it.note?' <span style="color:#a07a3a;font-size:11px">（'+esc(it.note)+'）</span>':'');
       var nm=(it.new_month==='(延期月份待补填)'?'<b style="color:#c0392b">待定（月份未填）</b>':'<b style="color:#e67e22">'+esc(it.new_month)+'</b>');
       html+='· '+esc(it.client||'—')+' / '+esc(it.project)+'（'+esc(it.bd||'—')+'） → '+nm+amt+nt+'<br>';
@@ -7769,7 +7769,7 @@ function showClientDetail(cn){
   }
 
   if(itos.length){
-    h+='<div class="section-title" style="margin-top:16px">ITO结算（KPI-H列 / 财务-G列） 合计: '+fmtW(itoTotal/10000)+'万 ('+itos.length+'条)</div><table class="data-table"><thead><tr><th> 团队</th><th>BD</th><th>项目</th><th>月份</th><th class="num-header">财务金额(G)</th><th class="num-header">KPI金额(H)</th></tr></thead><tbody>';
+    h+='<div class="section-title" style="margin-top:16px">ITO结算（KPI-H列 / 财务-G列） 合计: '+fmtW(itoTotal/10000)+' ('+itos.length+'条)</div><table class="data-table"><thead><tr><th> 团队</th><th>BD</th><th>项目</th><th>月份</th><th class="num-header">财务金额(G)</th><th class="num-header">KPI金额(H)</th></tr></thead><tbody>';
     itos.sort(function(a,b){return (b.kpi_amount||0)-(a.kpi_amount||0);}).forEach(function(s){
       h+='<tr><td>'+(s.team||'-')+'</td><td>'+(s.bd||'-')+'</td><td>'+(s.project||'-')+'</td><td>'+(s.month||'-')+'</td>'+
         '<td class="num">'+fmtW(s.fn_amount/10000)+'</td><td class="num hl">'+fmtW(s.kpi_amount/10000)+'</td></tr>';
