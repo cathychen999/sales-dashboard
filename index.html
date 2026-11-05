@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年众安信科销售业绩看板 V11.46</title>
+<title>2026年众安信科销售业绩看板 V11.47</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','SF Pro Display','Segoe UI',Roboto,sans-serif;background:#eef1f7;color:#1f2d44;min-height:100vh;font-size:13px;line-height:1.55;-webkit-font-smoothing:antialiased}
 .header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:linear-gradient(135deg,#0e47a8 0%,#1a5fd9 100%);box-shadow:0 2px 12px rgba(14,71,168,0.18)}
-.header-l{display:flex;align-items:center;gap:12px}
-.logo{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff}
-.header h1{font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff}
-.header-r{display:flex;align-items:center;gap:20px;font-size:11px;color:rgba(255,255,255,0.85)}
+.header-l{display:flex;align-items:center;gap:12px;flex:0 0 auto;white-space:nowrap}
+.logo{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex:0 0 auto}
+.header h1{font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;white-space:nowrap}
+.header-r{display:flex;align-items:center;gap:20px;font-size:11px;color:rgba(255,255,255,0.85);flex:1;min-width:0;justify-content:flex-end}
+.header-r .live-dot{flex:0 0 auto}
+/* V11.47: 版本描述单行省略，避免超长文本把 header-l 压成竖条（2026-11-05 排版事故） */
+.ver-txt{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .live-dot{width:7px;height:7px;background:#34d399;border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
@@ -223,7 +226,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 <body>
 <div class="header">
   <div class="header-l"><div class="logo">众</div><h1>2026年众安信科销售业绩看板</h1></div>
-  <div class="header-r"><span class="live-dot"></span>数据版本: 2026-11-05 (V11.46 · 修复V11.44/45加密事故——加密误用文件路径当密码导致密码门全员「密码错误」，已用正确密码重加密并回环验证；11月业绩上线：团队/产品线月度明细延伸至11月+11月中标项目明细；必拿变化仅保留11月&12月（11月新增4/退出8/1288万、12月新增7/退出2/2340万），国民养老/Q3结算不体现、9月必拿不再展示；未签约38个/3204.87万，本周完成签约3个、新增中标9个）
+  <div class="header-r"><span class="live-dot"></span><span class="ver-txt" title="数据版本: 2026-11-05 (V11.47 · 修复header未闭合导致的整页排版错乱（nav/content被压成窄条，已加HTML结构门禁）；同时修复V11.44/45加密事故——加密误用文件路径当密码导致密码门全员「密码错误」，已用正确密码重加密并回环验证；11月业绩上线：团队/产品线月度明细延伸至11月+11月中标项目明细；必拿变化仅保留11月&amp;12月（11月新增4/退出8/1288万、12月新增7/退出2/2340万），国民养老/Q3结算不体现、9月必拿不再展示；未签约38个/3204.87万，本周完成签约3个、新增中标9个）">数据版本: 2026-11-05 (V11.47 · 修复header未闭合导致的整页排版错乱（nav/content被压成窄条，已加HTML结构门禁）；同时修复V11.44/45加密事故——加密误用文件路径当密码导致密码门全员「密码错误」，已用正确密码重加密并回环验证；11月业绩上线：团队/产品线月度明细延伸至11月+11月中标项目明细；必拿变化仅保留11月&amp;12月（11月新增4/退出8/1288万、12月新增7/退出2/2340万），国民养老/Q3结算不体现、9月必拿不再展示；未签约38个/3204.87万，本周完成签约3个、新增中标9个）</span></div>
 </div>
 <div class="nav">
   <button class="nav-btn active" data-tab="team" onclick="switchTab('team')">销售团队总揽</button>
